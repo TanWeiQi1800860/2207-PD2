@@ -5,5 +5,5 @@ GUI is created with wxpython, it contains 2 input text field, input and output. 
 This folder contains the obfuscation techniques. Any python file put in to this folder will appear in the checkbox area.
 # resources
 This folder contains any resources required for the project
-#tools
+# tools
 This folder contains external tools required for the project
