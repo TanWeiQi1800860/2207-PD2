@@ -82,7 +82,10 @@ class MainFrame(wx.Frame):
         font2 = wx.Font(16, wx.SWISS,wx.FONTSTYLE_NORMAL,wx.NORMAL)
         self.list.SetFont(font2)
         ob_py_modules = self.get_ob_py_module()
-        ob_py_modules.remove("__ init __.py")
+        try:
+            ob_py_modules.remove("__ init __.py")
+        except:
+            True
         for i in ob_py_modules:
             str_name = i.replace('_',' ').replace('.py','')
             self.list.Insert(str_name , ob_py_modules.index(i))
