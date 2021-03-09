@@ -97,6 +97,9 @@ class MainFrame(wx.Frame):
         self.btn_obfuscate = wx.Button(self.main_panel, 9, label='Obfuscate')
         hor_Sizer_04.Add(self.btn_obfuscate, 101, wx.ALL | wx.RIGHT, 5)
         self.btn_obfuscate.Bind(wx.EVT_BUTTON, self.on_btn_obfuscate_click)
+        self.gauge = wx.Gauge(self.main_panel, range=4, size=(400, 25), style=wx.GA_HORIZONTAL)
+        hor_Sizer_04.Add(self.gauge, proportion = 1, border = 10)
+        self.progressValue = 0
 
         ver_Sizer.Add(hor_Sizer_04)
 
@@ -156,20 +159,49 @@ class MainFrame(wx.Frame):
         os.chdir("..")
         return temp_list
 
+    def updatebar(self):
+        self.progressValue = self.progressValue + 1
+        self.gauge.SetValue(self.progressValue)
+        if self.progressValue >= 20:
+            return
+
     def on_btn_obfuscate_click(self, e):
-        if(verify_tools()):
-            try:
-                if not os.path.exists(self.txt_fileoutput.GetValue()):
+        self.gauge.SetValue(0)
+        self.progressValue = 0
+        if verify_tools():
+            if not os.path.exists(self.txt_fileoutput.GetValue()):
+                try:
                     os.mkdir(self.txt_fileoutput.GetValue())
                     print("Directory ", self.txt_fileoutput.GetValue(), " Created ")
-                else:
-                    print("Directory ", self.txt_fileoutput.GetValue(), " already exists")
-                decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), True)
-            except Exception as e:
-                print(e)
-            AES_C = Constant_String_Encryption.AESCipher("Thereisnospoon")
-            apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\'))-1].split('.')[0]
-            Constant_String_Encryption.AESCipher.find_string(AES_C,self.txt_fileoutput.GetValue() + apk_name + "\\smali")
+                except:
+                    print("Output folder not found/valid")
+                    return
+            else:
+                print("Directory ", self.txt_fileoutput.GetValue(), " already exists")
+            if os.path.exists(self.txt_fileinput.GetValue()):
+                try:
+                    decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), self, True)
+                except Exception as e:
+                    print(e)
+                AES_C = Constant_String_Encryption.AESCipher("Thereisnospoon")
+                apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split('.')[0]
+                try:
+                    Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
+                                                                     apk_name + "\\smali", True)
+                    try:
+                        Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue()
+                                                                         + apk_name + "\\smali_classes2", False)
+                    except:
+                        True
+                    compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
+                    self.updatebar()
+                except FileNotFoundError or FileExistsError:
+                    print("Input file is empty or invalid")
+                    return
+                except Exception as e:
+                    print(e)
+            else:
+                print("Input file not found")
 
 
 if __name__ == '__main__':

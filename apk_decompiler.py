@@ -5,13 +5,14 @@ import threading
 
 from subprocess import call, DEVNULL
 
+from GUI import MainFrame
+
 tools_path = "tools"
 dex2jar_path = tools_path + "\\dex2jar\\d2j-dex2jar.bat"
 jd_path = tools_path + "\\jd-cli\\jd-cli.bat"
 apktool_path = tools_path + "\\apktool\\apktool.jar"
 
-
-def decompile_apk(apk_path, output_path, verbose, odex_file=None):
+def decompile_apk(apk_path, output_path,mainframe, verbose, odex_file=None):
     print("[+] Decompiling the apk\n")
 
     if verbose:
@@ -31,6 +32,7 @@ def decompile_apk(apk_path, output_path, verbose, odex_file=None):
         print("[~] Removing old temp directory")
         shutil.rmtree("temp")
 
+    MainFrame.updatebar(mainframe)
     print("[+] Creating temp directory")
     os.makedirs("temp")
     print(os.getcwd())
@@ -71,7 +73,10 @@ def decompile_apk(apk_path, output_path, verbose, odex_file=None):
     os.makedirs(output_dir)
 
     t1.join()
+    MainFrame.updatebar(mainframe)
     t2.join()
+    MainFrame.updatebar(mainframe)
+
     print("[+] Moving reverse engineering files")
     re_list = os.listdir(apk_re)
     for re_files in re_list:
@@ -113,5 +118,12 @@ def decom_jar(apk_name, apk_jar):
 def re_apk(apk_name, apk_path):
     print("[+] Reverse engineering the apk")
     apk_re = "temp/" + apk_name + "_re"
-    t2 = threading.Thread(target=call("java -jar " + apktool_path + " d " + apk_path + " -o " + apk_re, shell=False))
+    call("java -jar " + apktool_path + " d " + apk_path + " -o " + apk_re, shell=False)
 
+def compile_apk(output_dir, apk_path):
+    print("[+] Compiling the APK")
+    apk_name = os.path.splitext(os.path.basename(apk_path))[0]
+    call("java -jar " + apktool_path + " b " + output_dir+ "/"+apk_name, shell=False)
+    if os.path.exists(output_dir+"/"+apk_name+".apk"):
+        os.remove(output_dir+"/"+apk_name+".apk")
+    shutil.move(output_dir+ "/"+apk_name+"/dist/"+apk_name+".apk", output_dir)

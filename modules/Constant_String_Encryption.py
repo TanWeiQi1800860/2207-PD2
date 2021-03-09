@@ -39,28 +39,38 @@ class AESCipher(object):
         plain_text = cipher.decrypt(encrypted_text[self.block_size:]).decode("utf-8")
         return self.__unpad(plain_text)
 
-    def find_string(self, output_dir):
+    def find_string(self, output_dir, putDecryptFile):
         smali_list = []
-        cf = open("resources\\DecryptString.smali", "r")
-        c_file = cf.read()
-        cf.close()
-        f = open(output_dir + "\\DecryptString.smali", "w")
-        f.write(c_file)
-        f.close()
+        if(putDecryptFile):
+            cf = open("resources\\DecryptString.smali", "r")
+            c_file = cf.read()
+            cf.close()
+            f = open(output_dir + "\\DecryptString.smali", "w")
+            f.write(c_file)
+            f.close()
         for path, subdirs, files in os.walk(output_dir):
-            exclude = set(['android', 'androidx', 'kotlin', 'kotlinx'])
+            exclude = set(['android', 'androidx', 'kotlin', 'kotlinx','google'])
             subdirs[:] = [d for d in subdirs if d not in exclude]
+            exclude_file = set(['DecryptString.smali'])
+            files[:] = [f for f in files if f not in exclude_file]
             for name in files:
                 if ".smali" in name:
                     smali_list.append(PurePath(path, name))
         for filename in smali_list:
             with open(filename, 'r', encoding="utf-8") as rf:
                 data = rf.read()
-                c_strings = re.findall(r"const-string\s.+\s\"(.+)\"", data)
+                c_strings = re.findall(r"const-string\s.+,\s\"(.+)\"", data)
                 if (len(c_strings) > 0):
                     for cstring in c_strings:
                         try:
-                            data = re.sub(r"{}".format(cstring), r"{}".format(self.encrypt(cstring)), data)
+                            encrypt_string = self.encrypt(cstring)
+                            data = re.sub(r"{}".format(cstring), encrypt_string, data)
+                            var_name = re.search(r"const-string\s(.+),\s\"" + re.escape(encrypt_string) +"\"", data)
+                            temp_string = encrypt_string + "\"\n" + "\tinvoke-static {"+ var_name.group(1) + \
+                                          "}, Lcom/DecryptManager/DecryptString/DecryptString;->decrypt" \
+                                          "(Ljava/lang/String;)Ljava/lang/String;\n\tmove-result-object " + \
+                                          var_name.group(1)
+                            data = re.sub(r"{}".format(encrypt_string + "\""), temp_string, data)
                         except Exception as e:
                             print(str(filename) + " >> Line: " + cstring + " >> " + str(e))
                     with open(filename, 'w', encoding="utf-8") as wf:
