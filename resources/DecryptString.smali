@@ -1,4 +1,4 @@
-.class public Lcom/decryptmanager/DecryptString;
+.class public Lcom/DecryptManager/DecryptString/DecryptString;
 .super Ljava/lang/Object;
 .source "DecryptString.java"
 
