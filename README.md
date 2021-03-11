@@ -5,13 +5,14 @@ GUI is created with wxpython, it contains 2 input text field, input and output. 
 This folder contains the obfuscation techniques. Any python file put in to this folder will appear in the checkbox area.
 # resources
 This folder contains any resources required for the project
-  obf_key.jks - store pass: 123456
-  Hello-world.apk - For testing obfuscate technique
+ - obf_key.jks - store pass: 123456
+ - Hello-world.apk - For testing obfuscate technique
 # tools
 This folder contains external tools required for the project
+
   Tools:
-  apktool v2.3.4
-  dex2jar v2.1-20190905-lanchon
-  jd-cli 0.9.1.Final
-  jadx-gui-1.2.0-no-jre-win
-  jarsigner.exe jdk-15.0.2
+- apktool v2.3.4
+- dex2jar v2.1-20190905-lanchon
+- jd-cli 0.9.1.Final
+- jadx-gui-1.2.0-no-jre-win
+- jarsigner.exe jdk-15.0.2
