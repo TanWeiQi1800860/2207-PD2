@@ -11,8 +11,10 @@ tools_path = "tools"
 dex2jar_path = tools_path + "\\dex2jar\\d2j-dex2jar.bat"
 jd_path = tools_path + "\\jd-cli\\jd-cli.bat"
 apktool_path = tools_path + "\\apktool\\apktool.jar"
+jarsigner_path = tools_path + "\\jarsigner.exe"
+keystore_path = "resources\\obf_key.jks"
 
-def decompile_apk(apk_path, output_path,mainframe, verbose, odex_file=None):
+def decompile_apk(apk_path, output_path, mainframe, verbose, odex_file=None):
     print("[+] Decompiling the apk\n")
 
     if verbose:
@@ -56,7 +58,10 @@ def decompile_apk(apk_path, output_path,mainframe, verbose, odex_file=None):
 
     print("[+] Getting the jar")
     apk_jar = "temp/" + apk_name + ".jar"
-    call(dex2jar_path + " " + apk_classes + " -o " + apk_jar, shell=True)
+    if os.path.exists(apk_unziped_dir + "/classes2.dex"):
+        call(dex2jar_path + " " + apk_unziped_dir + "/classes2.dex" + " -o " + apk_jar, shell=True)
+    else:
+        call(dex2jar_path + " " + apk_classes + " -o " + apk_jar, shell=True)
 
     apk_java = "temp/" + apk_name + "_java/src"
     t1 = threading.Thread(target=decom_jar, args=(apk_name, apk_jar,))
@@ -91,6 +96,7 @@ def decompile_apk(apk_path, output_path,mainframe, verbose, odex_file=None):
 
     print("\n[+] Done decompiling the apk")
 
+
 def verify_tools():
     if not os.path.exists(tools_path):
         print("[-] Error: 'tools' folder is missing")
@@ -110,20 +116,29 @@ def verify_tools():
 
     return True
 
+
 def decom_jar(apk_name, apk_jar):
     print("[+] Decompiling the jar")
     apk_java = "temp/" + apk_name + "_java/src"
     call(jd_path + " " + apk_jar + " -od " + apk_java, shell=False)
+
 
 def re_apk(apk_name, apk_path):
     print("[+] Reverse engineering the apk")
     apk_re = "temp/" + apk_name + "_re"
     call("java -jar " + apktool_path + " d " + apk_path + " -o " + apk_re, shell=False)
 
+
 def compile_apk(output_dir, apk_path):
     print("[+] Compiling the APK")
     apk_name = os.path.splitext(os.path.basename(apk_path))[0]
-    call("java -jar " + apktool_path + " b " + output_dir+ "/"+apk_name, shell=False)
-    if os.path.exists(output_dir+"/"+apk_name+".apk"):
-        os.remove(output_dir+"/"+apk_name+".apk")
-    shutil.move(output_dir+ "/"+apk_name+"/dist/"+apk_name+".apk", output_dir)
+    call("java -jar " + apktool_path + " b " + output_dir + "/" + apk_name, shell=False)
+    if os.path.exists(output_dir + "/" + apk_name + ".apk"):
+        os.remove(output_dir + "/" + apk_name + ".apk")
+    shutil.move(output_dir + "/" + apk_name + "/dist/" + apk_name + ".apk", output_dir)
+    print("[+] Done Compiling the APK")
+    sign_apk(jarsigner_path, keystore_path, output_dir+"\\"+apk_name+".apk")
+
+def sign_apk(jarsigner_path, keystore_path, apk_path):
+    print("[+] Signing the APK")
+    call(jarsigner_path + " -keystore " + keystore_path + " -storepass 123456 " + apk_path + " my-alias", shell=False)

@@ -183,16 +183,18 @@ class MainFrame(wx.Frame):
                     decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), self, True)
                 except Exception as e:
                     print(e)
-                AES_C = Constant_String_Encryption.AESCipher("Thereisnospoon")
+                AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
                 apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split('.')[0]
                 try:
-                    Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
-                                                                     apk_name + "\\smali", True)
-                    try:
-                        Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue()
-                                                                         + apk_name + "\\smali_classes2", False)
-                    except:
-                        True
+                    if(not os.path.exists(self.txt_fileoutput.GetValue()+ apk_name + "\\smali_classes2")):
+                        Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
+                                                                         apk_name + "\\smali", True)
+                    else:
+                        try:
+                            Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue()
+                                                                             + apk_name + "\\smali_classes2", False)
+                        except:
+                            True
                     compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
                     self.updatebar()
                 except FileNotFoundError or FileExistsError:
