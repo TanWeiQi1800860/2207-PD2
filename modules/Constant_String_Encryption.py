@@ -1,10 +1,9 @@
 import os
 from pathlib import PurePath
 import re
-import hashlib
-from Crypto import Random
+
 from Crypto.Cipher import AES
-from base64 import b64encode, b64decode
+from base64 import b64encode
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -55,7 +54,7 @@ class AESCipher(object):
                                           "ing;\n\tmove-result-object "+var_name.group(1)
                             data = re.sub(r"const-string\s(.+),\s\"" + re.escape(cstring) +"\"", temp_string, data)
                         except Exception as e:
-                            print(str(filename) + " >> Line: " + cstring + " >> " + str(e))
+                            print(str(filename) + " >> String: " + cstring + " >> " + str(e))
                     with open(filename, 'w', encoding="utf-8") as wf:
                         wf.write(data)
                         wf.close()
