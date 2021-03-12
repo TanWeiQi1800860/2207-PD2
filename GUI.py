@@ -189,9 +189,11 @@ class MainFrame(wx.Frame):
                 except Exception as e:
                     print(e)
                 if 'Arithmetic Branch' in self.list.CheckedStrings:
+                    print("[+] Running Arithmetic Branch")
                     Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue())
                     self.updatebar()
                 if 'Constant String Encryption' in self.list.CheckedStrings:
+                    print("[+] Constant String Encryption")
                     AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
                     apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split('.')[0]
                     try:
