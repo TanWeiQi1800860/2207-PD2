@@ -135,9 +135,12 @@ def compile_apk(output_dir, apk_path):
     call("java -jar " + apktool_path + " b " + output_dir + "/" + apk_name, shell=False)
     if os.path.exists(output_dir + "/" + apk_name + ".apk"):
         os.remove(output_dir + "/" + apk_name + ".apk")
-    shutil.move(output_dir + "/" + apk_name + "/dist/" + apk_name + ".apk", output_dir)
-    print("[+] Done Compiling the APK")
-    sign_apk(jarsigner_path, keystore_path, output_dir+"\\"+apk_name+".apk")
+    try:
+        shutil.move(output_dir + "/" + apk_name + "/dist/" + apk_name + ".apk", output_dir)
+        print("[+] Done Compiling the APK")
+        sign_apk(jarsigner_path, keystore_path, output_dir + "\\" + apk_name + ".apk")
+    except FileNotFoundError:
+        print("Error - APK failed to compiled")
 
 def sign_apk(jarsigner_path, keystore_path, apk_path):
     print("[+] Signing the APK")

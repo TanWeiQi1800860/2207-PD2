@@ -9,11 +9,14 @@ try:
     from apk_decompiler import *
 except:
     print("apk_decompiler.py cannot be found")
-
 try:
     from modules import Constant_String_Encryption
 except:
     print("Constant_String_Encryption.py cannot be found")
+try:
+    from modules import Arithmetic_Branch
+except:
+    print("Arithmetic_Branch.py cannot be found")
 
 sys.path.insert(0, '/modules')
 ICON_PATH = os.getcwd() + "/resources/team22.ico"
@@ -167,6 +170,8 @@ class MainFrame(wx.Frame):
 
     def on_btn_obfuscate_click(self, e):
         self.gauge.SetValue(0)
+        progress_max = 3 + len(self.list.CheckedStrings)
+        self.gauge.SetRange(progress_max)
         self.progressValue = 0
         if verify_tools():
             if not os.path.exists(self.txt_fileoutput.GetValue()):
@@ -183,25 +188,19 @@ class MainFrame(wx.Frame):
                     decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), self, True)
                 except Exception as e:
                     print(e)
-                AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
-                apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split('.')[0]
-                try:
-                    if(not os.path.exists(self.txt_fileoutput.GetValue()+ apk_name + "\\smali_classes2")):
+                if 'Arithmetic Branch' in self.list.CheckedStrings:
+                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue())
+                    self.updatebar()
+                if 'Constant String Encryption' in self.list.CheckedStrings:
+                    AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
+                    apk_name = self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split('.')[0]
+                    try:
                         Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
                                                                          apk_name + "\\smali", True)
-                    else:
-                        try:
-                            Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue()
-                                                                             + apk_name + "\\smali_classes2", False)
-                        except:
-                            True
-                    compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
-                    self.updatebar()
-                except FileNotFoundError or FileExistsError:
-                    print("Input file is empty or invalid")
-                    return
-                except Exception as e:
-                    print(e)
+                        self.updatebar()
+                    except Exception as e:
+                        print(e)
+                compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
             else:
                 print("Input file not found")
 
