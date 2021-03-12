@@ -4,6 +4,8 @@ import re
 from pathlib import PurePath
 
 word_list_path = "resources\\words_list.txt"
+nop_py_path = "modules\\Nop_Code.py"
+
 def get_word_list():
     with open(word_list_path, 'r', encoding="utf-8") as wl:
         w_list = wl.read().split()
@@ -30,8 +32,10 @@ def PrintFunction(if_cond):
            "\n\tinvoke-virtual {v1, v2}, Ljava/io/PrintStream;->print(Ljava/lang/Object;)V\n\t:cond_" + str(if_cond)
 
 
-def Find_method(output_dir):
+def Find_method(output_dir, allow_nop_code):
     smali_list = []
+    if(allow_nop_code):
+        print("[+] Adding Nop Code")
     for path, subdirs, files in os.walk(output_dir):
         exclude = set(['android', 'androidx', 'kotlin', 'kotlinx', 'google'])
         subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -75,9 +79,17 @@ def Find_method(output_dir):
                         temp_string = "\t" + Arithmetic(if_cond) + "\n\n\t" + Arithmetic(if_cond) + "\n\t" +\
                                       PrintFunction(if_cond) + "\n\n\t" + line_start
                         data = re.sub(re.escape(line_start), temp_string, data)
+                        if allow_nop_code:
+                            data = re.sub(r".end\smethod", "\tnop\n.end method", data)
                         if_cond = if_cond + 1
                     except Exception as e:
                         print(str(filename) + " >> String: " + cstring + " >> " + str(e))
                 with open(filename, 'w', encoding="utf-8") as wf:
                     wf.write(data)
                     wf.close()
+
+if(not os.path.exists(nop_py_path)):
+    with open(nop_py_path, 'w', encoding="utf-8") as wf:
+        data = "#This is a empty python file"
+        wf.write(data)
+        wf.close()
