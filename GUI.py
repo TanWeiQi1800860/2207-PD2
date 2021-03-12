@@ -190,7 +190,7 @@ class MainFrame(wx.Frame):
                     print(e)
                 if 'Arithmetic Branch' in self.list.CheckedStrings:
                     print("[+] Running Arithmetic Branch")
-                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue())
+                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue(), 'Nop Code' in self.list.CheckedStrings)
                     self.updatebar()
                 if 'Constant String Encryption' in self.list.CheckedStrings:
                     print("[+] Constant String Encryption")
