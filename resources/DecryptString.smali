@@ -2,7 +2,6 @@
 .super Ljava/lang/Object;
 .source "DecryptString.java"
 
-
 # static fields
 .field private static final initVector:Ljava/lang/String; = "0000000000000000"
 
@@ -79,11 +78,9 @@
     invoke-virtual {v2, v3, v0, v1}, Ljavax/crypto/Cipher;->init(ILjava/security/Key;Ljava/security/spec/AlgorithmParameterSpec;)V
 
     .line 27
-    invoke-static {}, Ljava/util/Base64;->getDecoder()Ljava/util/Base64$Decoder;
+    const/4 v3, 0x0
 
-    move-result-object v3
-
-    invoke-virtual {v3, p0}, Ljava/util/Base64$Decoder;->decode(Ljava/lang/String;)[B
+    invoke-static {p0, v3}, Landroid/util/Base64;->decode(Ljava/lang/String;I)[B
 
     move-result-object v3
 
