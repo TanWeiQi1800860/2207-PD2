@@ -21,9 +21,9 @@ def Arithmetic(if_cond):
     equal_ari = random.randrange(1000, 2000)
     if_string = "\n\tconst/16 v2, " + hex(equal_ari) + "\n\tif-ne v1, v2, :cond_" + str(if_cond) + "\n"
     if operator == '-':
-        return "\n\tconst/16 v0, " + hex(left_ari) + "\n\tadd-int/lit8 v1,v0, -" + hex(right_ari) + if_string
+        return "const/16 v0, " + hex(left_ari) + "\n\tadd-int/lit8 v1,v0, -" + hex(right_ari) + if_string
     else:
-        return "\n\tconst/16 v0, " + hex(left_ari) + "\n\t" + operator + " v1,v0, " + hex(right_ari) + if_string
+        return "const/16 v0, " + hex(left_ari) + "\n\t" + operator + " v1,v0, " + hex(right_ari) + if_string
 
 
 def PrintFunction(if_cond):
@@ -39,13 +39,14 @@ def Find_method(output_dir, allow_nop_code):
     for path, subdirs, files in os.walk(output_dir):
         exclude = set(['android', 'androidx', 'kotlin', 'kotlinx', 'google'])
         subdirs[:] = [d for d in subdirs if d not in exclude]
-        exclude_file = set(['DecryptString.smali', 'BuildConfig.smali'])
+        exclude_file = set(['DecryptString.smali', 'BuildConfig.smali', 'Grid$GridIterator.smali'])
         files[:] = [f for f in files if f not in exclude_file]
         for name in files:
             if ".smali" in name:
                 smali_list.append(PurePath(path, name))
     for filename in smali_list:
         with open(filename, 'r', encoding="utf-8") as rf:
+            cond_exist_found = False
             data = rf.read()
             c_strings = re.findall(r".method\s.+\)V", data)
             c_strings = list(dict.fromkeys(c_strings))
@@ -65,25 +66,34 @@ def Find_method(output_dir, allow_nop_code):
                 if_cond = 0
                 for cstring in c_strings:
                     try:
-                        line_start = ""
-                        cond_exist = ""
-                        for x in method_strings:
-                            if x in filtered_method:
-                                line_start = re.search(".line\s\d+", x).group()
-                                cond_exist = re.search(":cond_(\d+)", x).group(1)
-                                local_count = int(re.search(".locals\s(\d+)", x).group(1))
-                                if local_count < 3:
-                                    data = re.sub(re.escape(cstring) + "\s+.locals\s\d+",cstring + "\n\t.locals 3",data)
-                        if cond_exist != None:
-                            if_cond = int(cond_exist) + 1
-                        temp_string = "\t" + Arithmetic(if_cond) + "\n\n\t" + Arithmetic(if_cond) + "\n\t" +\
-                                      PrintFunction(if_cond) + "\n\n\t" + line_start
-                        data = re.sub(re.escape(line_start), temp_string, data)
-                        if allow_nop_code:
-                            data = re.sub(r".end\smethod", "\tnop\n.end method", data)
-                        if_cond = if_cond + 1
+                        cond_exist = -1
+                        for method in filtered_method:
+                            if cstring in method and "$" not in cstring:
+                                if(re.search(".line\s\d+", method) != None):
+                                    line_start = re.search(".line\s\d+", method).group()
+                                    if(re.search(":cond_(\d+)", data) != None):
+                                        cond_list = re.findall(":cond_(\d+)", data)
+                                        for i in range(0, len(cond_list)):
+                                            cond_list[i] = int(cond_list[i])
+                                        cond_list.sort()
+                                        cond_exist = cond_list[len(cond_list) - 1]
+                                    if(re.search(".locals\s(\d+)", method) != None):
+                                        local_count = int(re.search(".locals\s(\d+)", method).group(1))
+                                        if local_count < 3:
+                                            data = re.sub(re.escape(cstring) + "\s+.locals\s\d+",cstring + "\n\t.locals 3",data)
+                                    if cond_exist != -1 and cond_exist_found == False:
+                                        if_cond = int(cond_exist) + 1
+                                        cond_exist_found = True
+                                    temp_string = Arithmetic(if_cond) + "\t\n\t" + Arithmetic(if_cond) + "\n\t" +\
+                                                  PrintFunction(if_cond) + "\n\n\t" + line_start
+                                    next_line_after_line_start = re.search(".line\s\d+\s+[a-zA-Z]+.+", method).group()
+                                    data = re.sub(re.escape(next_line_after_line_start), temp_string, data)
+                                    if_cond = if_cond + 1
+                                    break;
                     except Exception as e:
                         print(str(filename) + " >> String: " + cstring + " >> " + str(e))
+                if allow_nop_code:
+                    data = re.sub(r".end\smethod", "\tnop\n.end method", data)
                 with open(filename, 'w', encoding="utf-8") as wf:
                     wf.write(data)
                     wf.close()
