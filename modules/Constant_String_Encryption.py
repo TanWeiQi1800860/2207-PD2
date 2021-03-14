@@ -31,9 +31,9 @@ class AESCipher(object):
             f.write(c_file)
             f.close()
         for path, subdirs, files in os.walk(output_dir):
-            exclude = set(['android', 'androidx', 'kotlin', 'kotlinx','google'])
-            subdirs[:] = [d for d in subdirs if d not in exclude]
-            exclude_file = set(['DecryptString.smali', 'BuildConfig.smali'])
+            exclude_dir = set(['android', 'androidx', 'kotlin', 'kotlinx','google'])
+            subdirs[:] = [d for d in subdirs if d not in exclude_dir]
+            exclude_file = set(['DecryptString.smali', 'BuildConfig.smali', 'MainActivity$onCreate$3.smali'])
             files[:] = [f for f in files if f not in exclude_file]
             for name in files:
                 if ".smali" in name:
@@ -41,18 +41,19 @@ class AESCipher(object):
         for filename in smali_list:
             with open(filename, 'r', encoding="utf-8") as rf:
                 data = rf.read()
-                c_strings = re.findall(r"const-string\s.+,\s\"(.+)\"", data)
+                c_strings = re.findall(r"const-string\s.+,\s\".+\"", data)
                 c_strings = list(dict.fromkeys(c_strings))
                 if (len(c_strings) > 0):
                     for cstring in c_strings:
                         try:
-                            encrypt_string = self.encrypt(cstring)
-                            var_name = re.search(r"const-string\s(.+),\s\"" + re.escape(cstring) +"\"", data)
+                            string_value = re.search(r"const-string\s[v|p]\d+,\s\"(.+)\"", cstring).group(1)
+                            encrypt_string = self.encrypt(string_value)
+                            var_name = re.search(r"const-string\s([v|p]\d+)", cstring)
                             temp_string = "const-string "+var_name.group(1)+", \""+encrypt_string+"\"\n"+\
                                           "\tinvoke-static {"+ var_name.group(1)+"}, Lcom/DecryptManager" \
                                           "/DecryptString/DecryptString;->decrypt (Ljava/lang/String;)Ljava/lang/Str" \
                                           "ing;\n\tmove-result-object "+var_name.group(1)
-                            data = re.sub(r"const-string\s(.+),\s\"" + re.escape(cstring) +"\"", temp_string, data)
+                            data = re.sub(re.escape(cstring), temp_string, data)
                         except Exception as e:
                             print(str(filename) + " >> String: " + cstring + " >> " + str(e))
                     with open(filename, 'w', encoding="utf-8") as wf:
