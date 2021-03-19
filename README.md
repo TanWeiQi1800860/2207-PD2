@@ -5,6 +5,9 @@ GUI is created with wxpython, it contains 2 input text field, input and output. 
 After downloading the zip, extract it to a location of your choice and open the folder as a project in PyCharm.
 # modules
 This folder contains the obfuscation techniques. Any python file put in to this folder will appear in the checkbox area.
+ -  Arithmetic_Branch.py : Add arithmetic if-else codes in methods. No arithemtic funtion will be added if register is more than 10 and if the method contains a '$' sign
+ -  Constant_String_Encryption.py : Encrypt all Const-string variable using AES CBC with padding 
+ -  Nop_Code.py : Add nop at the end of each method
 # resources
 This folder contains any resources required for the project
  - obf_key.jks - store pass: 123456
