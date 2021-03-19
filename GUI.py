@@ -26,6 +26,7 @@ try:
 except:
     True
 
+
 class DragandDrop(wx.FileDropTarget):
     def __init__(self, window):
         wx.FileDropTarget.__init__(self)
@@ -37,6 +38,7 @@ class DragandDrop(wx.FileDropTarget):
             self.window.updateText(filepath)
         return True
 
+
 class MainFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title='APK Obuscator', style=wx.DEFAULT_FRAME_STYLE & ~wx.MAXIMIZE_BOX
@@ -47,9 +49,9 @@ class MainFrame(wx.Frame):
         hor_Sizer = wx.BoxSizer(wx.HORIZONTAL)
         file_drop_target = DragandDrop(self)
 
-        lbl_fileinput = wx.StaticText(self.main_panel, 1, size=(121,25))
+        lbl_fileinput = wx.StaticText(self.main_panel, 1, size=(121, 25))
         lbl_fileinput.SetLabel("Input file:")
-        font = wx.Font(15, wx.SWISS,wx.FONTSTYLE_NORMAL,wx.NORMAL)
+        font = wx.Font(15, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.NORMAL)
         lbl_fileinput.SetFont(font)
         hor_Sizer.Add(lbl_fileinput, 2, wx.ALL | wx.LEFT, 10)
 
@@ -64,9 +66,9 @@ class MainFrame(wx.Frame):
         ver_Sizer.Add(hor_Sizer)
 
         hor_Sizer_02 = wx.BoxSizer(wx.HORIZONTAL)
-        lbl_fileoutput = wx.StaticText(self.main_panel, 5, size=(121,25))
+        lbl_fileoutput = wx.StaticText(self.main_panel, 5, size=(121, 25))
         lbl_fileoutput.SetLabel("Output folder:")
-        font = wx.Font(15, wx.SWISS,wx.FONTSTYLE_NORMAL,wx.NORMAL)
+        font = wx.Font(15, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.NORMAL)
         lbl_fileoutput.SetFont(font)
         hor_Sizer_02.Add(lbl_fileoutput, 6, wx.ALL | wx.LEFT, 10)
 
@@ -80,9 +82,9 @@ class MainFrame(wx.Frame):
         ver_Sizer.Add(hor_Sizer_02)
 
         hor_Sizer_03 = wx.BoxSizer(wx.HORIZONTAL)
-        self.list = wx.CheckListBox(self.main_panel, size=(500,400))
+        self.list = wx.CheckListBox(self.main_panel, size=(500, 400))
         hor_Sizer_03.Add(self.list, 102, wx.ALL | wx.RIGHT, 5)
-        font2 = wx.Font(16, wx.SWISS,wx.FONTSTYLE_NORMAL,wx.NORMAL)
+        font2 = wx.Font(16, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.NORMAL)
         self.list.SetFont(font2)
         ob_py_modules = self.get_ob_py_module()
         try:
@@ -90,8 +92,8 @@ class MainFrame(wx.Frame):
         except:
             True
         for i in ob_py_modules:
-            str_name = i.replace('_',' ').replace('.py','')
-            self.list.Insert(str_name , ob_py_modules.index(i))
+            str_name = i.replace('_', ' ').replace('.py', '')
+            self.list.Insert(str_name, ob_py_modules.index(i))
             self.list.Check(ob_py_modules.index(i))
 
         ver_Sizer.Add(hor_Sizer_03)
@@ -101,7 +103,7 @@ class MainFrame(wx.Frame):
         hor_Sizer_04.Add(self.btn_obfuscate, 101, wx.ALL | wx.RIGHT, 5)
         self.btn_obfuscate.Bind(wx.EVT_BUTTON, self.on_btn_obfuscate_click)
         self.gauge = wx.Gauge(self.main_panel, range=4, size=(400, 25), style=wx.GA_HORIZONTAL)
-        hor_Sizer_04.Add(self.gauge, proportion = 1, border = 10)
+        hor_Sizer_04.Add(self.gauge, proportion=1, border=10)
         self.progressValue = 0
 
         ver_Sizer.Add(hor_Sizer_04)
@@ -117,7 +119,8 @@ class MainFrame(wx.Frame):
         file_dir = '\\'.join(temp)
         path = Path(file_dir)
         raw_string = r"{}".format(path)
-        dlg = wx.FileDialog(self, title, raw_string, "", "APK files (*.apk)|*.apk|All Files (*.*)|*.*", style=wx.DD_DEFAULT_STYLE)
+        dlg = wx.FileDialog(self, title, raw_string, "", "APK files (*.apk)|*.apk|All Files (*.*)|*.*",
+                            style=wx.DD_DEFAULT_STYLE)
         if dlg.ShowModal() == wx.ID_OK:
             self.txt_fileinput.Clear()
             self.txt_fileinput.write(dlg.GetPath())
@@ -185,20 +188,23 @@ class MainFrame(wx.Frame):
                 print("Directory ", self.txt_fileoutput.GetValue(), " already exists")
             if os.path.exists(self.txt_fileinput.GetValue()):
                 apk_name = \
-                self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split(
-                    '.')[0]
+                    self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split(
+                        '.')[0]
                 try:
                     decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), self, True)
                 except Exception as e:
                     print(e)
-                if 'Arithmetic Branch' in self.list.CheckedStrings:
-                    print("[+] Running Arithmetic Branch")
-                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue()+"\\"+apk_name, 'Nop Code' in self.list.CheckedStrings)
+                AB = 'Arithmetic Branch' in self.list.CheckedStrings
+                NoC = 'Nop Code' in self.list.CheckedStrings
+                CSE = 'Constant String Encryption' in self.list.CheckedStrings
+                if AB or NoC:
+                    if AB:
+                        print("[+] Running Arithmetic Branch")
+                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue() + "\\" + apk_name, AB, NoC)
                     self.updatebar()
-                if 'Constant String Encryption' in self.list.CheckedStrings:
+                if CSE:
                     print("[+] Constant String Encryption")
                     AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
-
                     try:
                         Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
                                                                          apk_name + "\\smali", True)
@@ -218,4 +224,3 @@ if __name__ == '__main__':
     icon.CopyFromBitmap(wx.Bitmap(ICON_PATH, wx.BITMAP_TYPE_ANY))
     MainFrame.SetIcon(frame, icon)
     app.MainLoop()
-
