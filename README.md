@@ -9,6 +9,7 @@ This folder contains the obfuscation techniques. Any python file put in to this 
 This folder contains any resources required for the project
  - obf_key.jks - store pass: 123456
  - Hello-world.apk - For testing obfuscate technique
+ - app-debug.apk - A more complicated app. A 2048 game, from PD1
 # tools
 This folder contains external tools required for the project
 
