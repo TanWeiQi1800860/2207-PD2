@@ -76,8 +76,6 @@ def Find_method(output_dir, allow_Ari_Branch ,allow_nop_code):
                         try:
                             cond_exist = v0 = v1 = v2 = -1
                             for method in filtered_method:
-                                if ".method private final verifyFromSQLite()V" in method:
-                                    print("hu")
                                 if cstring in method and "$" not in cstring:
                                     if (re.search(".line\s\d+", method) != None):
                                         if (re.search(":cond_(\d+)", data) != None):
