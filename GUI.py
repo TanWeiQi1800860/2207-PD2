@@ -17,6 +17,11 @@ try:
     from modules import Arithmetic_Branch
 except:
     print("Arithmetic_Branch.py cannot be found")
+try:
+    from modules import Debug_Removal
+except:
+    print("Debug_Removal.py cannot be found")
+
 
 sys.path.insert(0, '/modules')
 ICON_PATH = os.getcwd() + "/resources/team22.ico"
@@ -197,20 +202,24 @@ class MainFrame(wx.Frame):
                 AB = 'Arithmetic Branch' in self.list.CheckedStrings
                 NoC = 'Nop Code' in self.list.CheckedStrings
                 CSE = 'Constant String Encryption' in self.list.CheckedStrings
+                DeRe = 'Debug Removal' in self.list.CheckedStrings
+                output_dir = self.txt_fileoutput.GetValue() + "\\" + apk_name
                 if AB or NoC:
                     if AB:
                         print("[+] Running Arithmetic Branch")
-                    Arithmetic_Branch.Find_method(self.txt_fileoutput.GetValue() + "\\" + apk_name, AB, NoC)
+                    Arithmetic_Branch.Find_method(output_dir, AB, NoC)
                     self.updatebar()
                 if CSE:
                     print("[+] Constant String Encryption")
                     AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
                     try:
-                        Constant_String_Encryption.AESCipher.find_string(AES_C, self.txt_fileoutput.GetValue() +
-                                                                         apk_name + "\\smali", True)
+                        Constant_String_Encryption.AESCipher.find_string(AES_C, output_dir + "\\smali", True)
                         self.updatebar()
                     except Exception as e:
                         print(e)
+                if DeRe:
+                    print("[+] Removing Debug information")
+                    Debug_Removal.Find_method_debug(output_dir)
                 compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
             else:
                 print("Input file not found")
