@@ -14,13 +14,13 @@ debug_op_codes = [
                 #".param\sp\d+,\s.+\s+"
             ]
 
-def Find_method_debug(output_dir):
+def Find_method_debug(output_dir, ignorefile):
     smali_list = []
     for path, subdirs, files in os.walk(output_dir):
         exclude = set(['android', 'androidx', 'kotlin', 'kotlinx', 'google'])
         subdirs[:] = [d for d in subdirs if d not in exclude]
-        #exclude_file = set([])
-        #files[:] = [f for f in files if f not in exclude_file]
+        if(len(ignorefile) > 0):
+            files[:] = [f for f in files if f not in ignorefile]
         for name in files:
             if ".smali" in name:
                 smali_list.append(PurePath(path, name))

@@ -21,7 +21,7 @@ class AESCipher(object):
         encrypted_text = cipher.encrypt(plain_text.encode())
         return b64encode(encrypted_text).decode("utf-8")
 
-    def find_string(self, output_dir, putDecryptFile):
+    def find_string(self, output_dir, putDecryptFile, ignorefile):
         smali_list = []
         exclude_str = []
         if(putDecryptFile):
@@ -34,9 +34,8 @@ class AESCipher(object):
         for path, subdirs, files in os.walk(output_dir):
             exclude_dir = set(['android', 'androidx', 'kotlin', 'kotlinx','google'])
             subdirs[:] = [d for d in subdirs if d not in exclude_dir]
-            exclude_file = set(['DecryptString.smali', 'BuildConfig.smali'])
             only_file = set(['MainActivity.smali'])
-            files[:] = [f for f in files if f not in exclude_file]
+            files[:] = [f for f in files if f not in ignorefile]
             #files[:] = [f for f in files if f in only_file]
             for name in files:
                 if ".smali" in name:

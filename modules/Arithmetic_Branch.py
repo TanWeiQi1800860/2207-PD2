@@ -39,15 +39,14 @@ def PrintFunction(if_cond):
            "\"\n\tinvoke-virtual {v1, v2}, Ljava/io/PrintStream;->print(Ljava/lang/Object;)V\n\t:cond_" + str(if_cond)
 
 
-def Find_method(output_dir, allow_Ari_Branch ,allow_nop_code):
+def Find_method(output_dir, allow_Ari_Branch ,allow_nop_code, ignorefile):
     smali_list = []
     if (allow_nop_code):
         print("[+] Adding Nop Code")
     for path, subdirs, files in os.walk(output_dir):
         exclude = set(['android', 'androidx', 'kotlin', 'kotlinx', 'google'])
         subdirs[:] = [d for d in subdirs if d not in exclude]
-        exclude_file = set(['DecryptString.smali', 'BuildConfig.smali', 'Grid$GridIterator.smali'])
-        files[:] = [f for f in files if f not in exclude_file]
+        files[:] = [f for f in files if f not in ignorefile]
         for name in files:
             if ".smali" in name:
                 smali_list.append(PurePath(path, name))
