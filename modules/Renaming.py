@@ -146,8 +146,12 @@ def get_VarNames(filePath_list):
                 while True:
                     line = fp.readline()
                     stripped_line = line.rstrip()
-                    if re.search(r"\b(\s+)\b(.[^ ]+?)(\s*)(\=)", str(stripped_line)):
-                        captured_java_varName = re.search(r"\b(\s+)\b(.[^ ]+?)(\s*)(\=)", str(stripped_line)).group(2)
+                    if re.search(r"\b\s+\b(.[^ ]+?)\s*=|\[\]\s(.+)\s*=\s", str(stripped_line)):
+                        captured_java_varName = re.search(r"\b\s+\b(.[^ ]+?)\s*=|\[\]\s(.+)\s*=\s",
+                                                          str(stripped_line)).group(1)
+                        if captured_java_varName is None:
+                            captured_java_varName = re.search(r"\b\s+\b(.[^ ]+?)\s*=|\[\]\s(.+)\s*=\s",
+                                                              str(stripped_line)).group(2)
                         captured_java_varName = captured_java_varName.strip()
                         if captured_java_varName in variable_dict:
                             variable_dict[captured_java_varName] += 1
