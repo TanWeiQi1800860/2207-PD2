@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#C9BCAC</color>
+    <color name="colorPrimaryDark">#C9BCAC</color>
+    <color name="colorAccent">#EDCC5F</color>
+
+    <color name="offWhiteBackground">#faf8ef</color>
+    <color name="offWhiteText">#f9f6f2</color>
+
+    <color name="tanBackground">#A49381</color>
+    <color name="tanTile">#C9BCAC</color>
+    <color name="redButtonBackground">#f65e3d</color>
+    <color name="brownButtonBackground">#3c3a33</color>
+    <color name="yellowButtonBackground">#EDCC5F</color>
+    <color name="blueButtonBackground">#4071ca</color>
+    <color name="tanButtonBackground">#A49381</color>
+
+    <color name="transparentBrown">#EEE4DA</color>
+    <color name="transparentYellow">#edc22e</color>
+
+    <color name="tileTextLight">#f9f6f2</color>
+    <color name="textBrown">#766E65</color>
+
+    <color name="tile2">#eee4da</color>
+    <color name="tile4">#ede0c8</color>
+    <color name="tile8">#f2b179</color>
+    <color name="tile16">#f59563</color>
+    <color name="tile32">#f67c5f</color>
+    <color name="tile64">#f65e3b</color>
+    <color name="tile128">#edcf72</color>
+    <color name="tile256">#edcf72</color>
+    <color name="tile512">#edc850</color>
+    <color name="tile1024">#edc53f</color>
+    <color name="tile2048">#edc22e</color>
+    <color name="tileSuper">#3c3a32</color>
+
+    //login
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="loginBtn">#f59563</color>
+
+</resources>

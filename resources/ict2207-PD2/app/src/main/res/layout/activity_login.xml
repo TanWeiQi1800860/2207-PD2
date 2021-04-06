@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tanTile"
+    tools:context=".LoginActivity">
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="117dp"
+        android:layout_height="112dp"
+        android:layout_marginTop="70dp"
+        android:background="@drawable/title_background"
+        android:gravity="center"
+        android:text="@string/_2048"
+        android:textAlignment="center"
+        android:textColor="@color/offWhiteText"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/loginpage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="185dp"
+        android:text="@string/login"
+        android:textAlignment="center"
+        android:textColor="#000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/logEmail"
+        android:layout_width="340dp"
+        android:layout_height="26dp"
+        android:layout_marginTop="245dp"
+        android:background="@color/white"
+        android:hint="@string/email"
+        android:textAlignment="center"
+        android:textColorHint="@color/teal_700"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:inputType="textEmailAddress"/>
+
+    <EditText
+        android:id="@+id/editPassword"
+        android:layout_width="340dp"
+        android:layout_height="26dp"
+        android:layout_marginTop="287dp"
+        android:background="@color/white"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textColorHint="@color/teal_700"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.492"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/login_btn"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="63dp"
+        android:layout_marginTop="350dp"
+        android:layout_marginEnd="63dp"
+        android:layout_marginBottom="258dp"
+        android:background="@color/loginBtn"
+        android:text="@string/login"
+        app:layout_constraintBottom_toTopOf="@+id/textViewRegister"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.507"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/textViewRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="112dp"
+        android:padding="10dp"
+        android:text="@string/register"
+        android:textAlignment="center"
+        android:textColor="@color/purple_700"
+        android:textColorLink="@color/purple_700"
+        android:textSize="16sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</android.support.constraint.ConstraintLayout>
