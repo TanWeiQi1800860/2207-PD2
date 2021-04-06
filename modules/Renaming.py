@@ -16,12 +16,13 @@ variable_numberCount = 0
 reserved_words_list = ["intent"]
 
 
-def identify_files(debug_input_dir):
+def identify_files(debug_input_dir, ignorefile):
     files_toObfuscate = []
     included_FileExts = set(['.kt', '.java'])
     excluded_Dirs = set(['.idea', 'build'])
     for subdir, dirs, files in os.walk(debug_input_dir, topdown=True):
         dirs[:] = [d for d in dirs if d not in excluded_Dirs]
+        files[:] = [f for f in files if f not in ignorefile]
         for file in files:
             filename, file_extension = os.path.splitext(file)
             if file_extension in included_FileExts:

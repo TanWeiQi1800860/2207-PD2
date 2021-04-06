@@ -275,7 +275,7 @@ class MainFrame(wx.Frame):
                             print(e)
                             return
                     shutil.copytree(inputdir, output_dir)
-                    full_FilePath_list = Renaming.identify_files(output_dir)
+                    full_FilePath_list = Renaming.identify_files(output_dir, ob_options.get("Renaming")['ignore_file'])
                     Renaming.get_VarNames(full_FilePath_list)
                 if not all(item in self.list.CheckedStrings for item in default_unchecked):
                     compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
@@ -456,7 +456,7 @@ class OptionsPop(wx.PopupWindow):
                 self.listbox.DeleteItem(sel)
                 item_id = self.listbox.InsertItem(0, renamed)
                 self.listbox.Select(item_id)
-
+    
     def OnDelete(self, event):
         sel = self.listbox.GetFirstSelected()
         if sel != -1:
