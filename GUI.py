@@ -22,12 +22,16 @@ try:
     from modules import Debug_Removal
 except:
     print("Debug_Removal.py cannot be found")
-
+try:
+    from modules import Renaming
+except:
+    print("Renaming.py cannot be found")
 
 sys.path.insert(0, '/modules')
 ICON_PATH = os.getcwd() + "/resources/team22.ico"
 my_app_id = r'team22'
 ob_options = {}
+default_unchecked = ["Renaming"]
 try:
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(my_app_id)
 except:
@@ -95,6 +99,7 @@ class MainFrame(wx.Frame):
         font2 = wx.Font(16, wx.SWISS, wx.FONTSTYLE_NORMAL, wx.NORMAL)
         self.list.SetFont(font2)
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.doubleclick, self.list)
+        self.Bind(wx.EVT_CHECKLISTBOX, self.OnTicked, self.list)
 
         ob_py_modules = self.get_ob_py_module()
         try:
@@ -104,7 +109,8 @@ class MainFrame(wx.Frame):
         for i in ob_py_modules:
             str_name = i.replace('_', ' ').replace('.py', '')
             self.list.Insert(str_name, ob_py_modules.index(i))
-            self.list.Check(ob_py_modules.index(i))
+            if str_name not in default_unchecked:
+                self.list.Check(ob_py_modules.index(i))
         self.update_options()
 
         ver_Sizer.Add(hor_Sizer_03)
@@ -183,57 +189,96 @@ class MainFrame(wx.Frame):
             return
 
     def doubleclick(self, event):
-        clb_selection = self.list.GetItems()[event.GetSelection()]
-        win = OptionsPop(self.GetTopLevelParent(), wx.SIMPLE_BORDER, clb_selection)
-        win.Center()
-        win.Show(True)
+        try:
+            clb_selection = self.list.GetItems()[event.GetSelection()]
+            win = OptionsPop(self.GetTopLevelParent(), wx.SIMPLE_BORDER, clb_selection)
+            win.Center()
+            win.Show(True)
+        except Exception as e:
+            print(e)
 
     def on_btn_obfuscate_click(self, e):
         self.gauge.SetValue(0)
-        progress_max = 3 + len(self.list.CheckedStrings)
+        progress_max = len(self.list.CheckedStrings)
         self.gauge.SetRange(progress_max)
         self.progressValue = 0
+        apk_only = True
         if verify_tools():
             if not os.path.exists(self.txt_fileoutput.GetValue()):
                 try:
                     os.mkdir(self.txt_fileoutput.GetValue())
                     print("Directory ", self.txt_fileoutput.GetValue(), " Created ")
                 except:
+                    md = wx.MessageDialog(self, "Output folder not found/valid",
+                                          "Error", wx.OK | wx.STAY_ON_TOP | wx.CENTRE)
+                    md.ShowModal()
                     print("Output folder not found/valid")
                     return
             else:
                 print("Directory ", self.txt_fileoutput.GetValue(), " already exists")
-            if os.path.exists(self.txt_fileinput.GetValue()):
+            inputdir = self.txt_fileinput.GetValue()
+            if os.path.exists(inputdir):
+                filename = os.path.basename(inputdir)
                 apk_name = \
-                    self.txt_fileinput.GetValue().split('\\')[len(self.txt_fileinput.GetValue().split('\\')) - 1].split(
+                    inputdir.split('\\')[len(inputdir.split('\\')) - 1].split(
                         '.')[0]
-                try:
-                    decompile_apk(self.txt_fileinput.GetValue(), self.txt_fileoutput.GetValue(), self, True)
-                except Exception as e:
-                    print(e)
+                if filename.endswith(".apk"):
+                    if all(item in self.list.CheckedStrings for item in default_unchecked) and apk_only:
+                        md = wx.MessageDialog(self, "Technique chosen is for folder containing source code",
+                                              "Invalid Input", wx.OK | wx.STAY_ON_TOP | wx.CENTRE)
+                        md.ShowModal()
+                        print("Technique chosen is for folder containing source code")
+                        return
+                    try:
+                        decompile_apk(inputdir, self.txt_fileoutput.GetValue(), self, True)
+                    except Exception as e:
+                        print(e)
+                else:
+                    apk_only = False
+                if not all(item in self.list.CheckedStrings for item in default_unchecked) and not apk_only:
+                    md = wx.MessageDialog(self, "APK file not detected",
+                                          "Invalid Input", wx.OK | wx.STAY_ON_TOP | wx.CENTRE)
+                    md.ShowModal()
+                    print("APK file not detected")
+                    return
                 AB = 'Arithmetic Branch' in self.list.CheckedStrings
                 NoC = 'Nop Code' in self.list.CheckedStrings
                 CSE = 'Constant String Encryption' in self.list.CheckedStrings
                 DeRe = 'Debug Removal' in self.list.CheckedStrings
-                output_dir = self.txt_fileoutput.GetValue() + "\\" + apk_name
+                Ren = 'Renaming' in self.list.CheckedStrings
+                output_dir = self.txt_fileoutput.GetValue() + apk_name
                 if AB or NoC:
                     if AB:
                         print("[+] Running Arithmetic Branch")
-                    Arithmetic_Branch.Find_method(output_dir, AB, NoC, ob_options.get("Arithmetic Branch")['ignore_file'])
+                    Arithmetic_Branch.Find_method(output_dir, AB, NoC,
+                                                  ob_options.get("Arithmetic Branch")['ignore_file'])
                     self.updatebar()
                 if CSE:
                     print("[+] Constant String Encryption")
                     AES_C = Constant_String_Encryption.AESCipher(b"Thereisnospoon68")
                     try:
                         Constant_String_Encryption.AESCipher.find_string(AES_C, output_dir + "\\smali", True,
-                                                                         ob_options.get("Constant String Encryption")['ignore_file'])
+                                                                         ob_options.get("Constant String Encryption")
+                                                                         ['ignore_file'])
                         self.updatebar()
                     except Exception as e:
                         print(e)
                 if DeRe:
                     print("[+] Removing Debug information")
                     Debug_Removal.Find_method_debug(output_dir, ob_options.get("Debug Removal")['ignore_file'])
-                compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
+                if Ren:
+                    print("[+] Renaming Variable and functions")
+                    if os.path.exists(output_dir):
+                        try:
+                            shutil.rmtree(output_dir, ignore_errors=False, onerror=self.handleRemoveReadonly)
+                        except Exception as e:
+                            print(e)
+                            return
+                    shutil.copytree(inputdir, output_dir)
+                    full_FilePath_list = Renaming.identify_files(output_dir)
+                    Renaming.get_VarNames(full_FilePath_list)
+                if not all(item in self.list.CheckedStrings for item in default_unchecked):
+                    compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
             else:
                 print("Input file not found")
 
@@ -250,22 +295,28 @@ class MainFrame(wx.Frame):
             f.write("{\n")
             for item in self.list.GetStrings():
                 if item == "Constant String Encryption":
-                    if(count < size):
-                        f.writelines("\t\"" + item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\"]\n\t},\n")
-                    elif(count == size):
-                        f.writelines("\t\"" +item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\"]\n\t}\n")
+                    if count < size:
+                        f.writelines(
+                            "\t\"" + item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\","
+                                            "\"BuildConfig.smali\"]\n\t},\n")
+                    elif count == size:
+                        f.writelines(
+                            "\t\"" + item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\","
+                                            "\"BuildConfig.smali\"]\n\t}\n")
                 elif item == "Arithmetic Branch":
-                    if (count < size):
-                        f.writelines("\t\"" +item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\","
-                                        "\"Grid$GridIterator.smali\"]\n\t},\n")
-                    elif (count == size):
-                        f.writelines("\t\"" +item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\","
+                    if count < size:
+                        f.writelines(
+                            "\t\"" + item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\","
+                                            "\"Grid$GridIterator.smali\"]\n\t},\n")
+                    elif count == size:
+                        f.writelines(
+                            "\t\"" + item + "\": {\n\t\t\"ignore_file\":[\"DecryptString.smali\",\"BuildConfig.smali\","
                                             "\"Grid$GridIterator.smali\"]\n\t}\n")
                 else:
-                    if (count < size):
-                        f.writelines("\t\"" +item + "\": {\n\t\t\"ignore_file\":[]\n\t},\n")
-                    elif (count == size):
-                        f.writelines("\t\"" +item + "\": {\n\t\t\"ignore_file\":[]\n\t}\n")
+                    if count < size:
+                        f.writelines("\t\"" + item + "\": {\n\t\t\"ignore_file\":[]\n\t},\n")
+                    elif count == size:
+                        f.writelines("\t\"" + item + "\": {\n\t\t\"ignore_file\":[]\n\t}\n")
                 count = count + 1
             f.write("\n}")
             f.close()
@@ -278,6 +329,22 @@ class MainFrame(wx.Frame):
             print(e)
             print("Error Saving file")
 
+    def OnTicked(self, event):
+        if self.list.GetItems()[event.GetSelection()] in default_unchecked:
+            for items in self.list.CheckedItems:
+                if self.list.GetItems()[items] not in default_unchecked:
+                    self.list.Check(items, False)
+        if self.list.GetItems()[event.GetSelection()] not in default_unchecked:
+            for items in self.list.CheckedItems:
+                if self.list.GetItems()[items] in default_unchecked:
+                    self.list.Check(items, False)
+
+    def handleRemoveReadonly(self, func, path, exc):
+        import errno, os, stat, shutil
+        os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        func(path)
+
+
 class OptionsPop(wx.PopupWindow):
     def __init__(self, parent, style, title):
         wx.PopupWindow.__init__(self, parent, style)
@@ -285,8 +352,10 @@ class OptionsPop(wx.PopupWindow):
         panel = wx.Panel(self)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
+        optionless = ["Nop Code"]
+
         self.listbox = wx.ListCtrl(panel, style=wx.LC_REPORT)
-        if(title != "Nop Code"):
+        if title not in optionless:
             self.listbox.InsertColumn(0, 'Files to ignore', width=345)
         else:
             self.listbox.Disable()
@@ -302,13 +371,18 @@ class OptionsPop(wx.PopupWindow):
         clrBtn = wx.Button(btnPanel, wx.ID_ANY, 'Clear', size=(90, 30))
         savBtn = wx.Button(btnPanel, wx.ID_ANY, 'Save', size=(90, 30))
         cloBtn = wx.Button(btnPanel, wx.ID_ANY, 'Close', size=(90, 30))
-
+        if (title in optionless):
+            newBtn.Disable()
+            renBtn.Disable()
+            delBtn.Disable()
+            clrBtn.Disable()
+            savBtn.Disable()
         self.Bind(wx.EVT_BUTTON, self.NewItem, id=newBtn.GetId())
         self.Bind(wx.EVT_BUTTON, self.OnRename, id=renBtn.GetId())
         self.Bind(wx.EVT_BUTTON, self.OnDelete, id=delBtn.GetId())
         self.Bind(wx.EVT_BUTTON, self.OnClear, id=clrBtn.GetId())
         self.Bind(wx.EVT_BUTTON, self.onClose, id=cloBtn.GetId())
-        self.Bind(wx.EVT_BUTTON, lambda event: self.onSave(event,title), id=savBtn.GetId())
+        self.Bind(wx.EVT_BUTTON, lambda event: self.onSave(event, title), id=savBtn.GetId())
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnRename)
 
         vbox.Add((-1, 20))
@@ -330,15 +404,15 @@ class OptionsPop(wx.PopupWindow):
         panel.Bind(wx.EVT_LEFT_UP, self.OnMouseLeftUp)
         panel.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
 
-        self.SetSize( (500,500) )
-        panel.SetSize( (500,500) )
+        self.SetSize((500, 500))
+        panel.SetSize((500, 500))
         wx.CallAfter(self.Refresh)
 
     def OnMouseLeftDown(self, evt):
         try:
             self.Refresh()
             self.ldPos = evt.GetEventObject().ClientToScreen(evt.GetPosition())
-            self.wPos = self.ClientToScreen((0,0))
+            self.wPos = self.ClientToScreen((0, 0))
             self.panel.CaptureMouse()
         except:
             True
@@ -374,13 +448,14 @@ class OptionsPop(wx.PopupWindow):
 
     def OnRename(self, event):
         sel = self.listbox.GetFirstSelected()
-        text = self.listbox.GetItemText(sel, 0)
-        renamed = wx.GetTextFromUser('Rename item', 'Rename dialog', text, self)
+        if sel >= 0:
+            text = self.listbox.GetItemText(sel, 0)
+            renamed = wx.GetTextFromUser('Rename item', 'Rename dialog', text, self)
 
-        if renamed != '':
-            self.listbox.DeleteItem(sel)
-            item_id = self.listbox.InsertItem(0, renamed)
-            self.listbox.Select(item_id)
+            if renamed != '':
+                self.listbox.DeleteItem(sel)
+                item_id = self.listbox.InsertItem(0, renamed)
+                self.listbox.Select(item_id)
 
     def OnDelete(self, event):
         sel = self.listbox.GetFirstSelected()
@@ -398,7 +473,6 @@ class OptionsPop(wx.PopupWindow):
         ob_options.get(title)['ignore_file'] = temp_list
         MainFrame.save_options(self)
         self.Show(False)
-
 
 
 if __name__ == '__main__':
