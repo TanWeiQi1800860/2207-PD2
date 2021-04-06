@@ -200,6 +200,8 @@ class MainFrame(wx.Frame):
     def on_btn_obfuscate_click(self, e):
         self.gauge.SetValue(0)
         progress_max = len(self.list.CheckedStrings)
+        if 'Renaming' in self.list.CheckedStrings:
+            progress_max = progress_max + 1
         self.gauge.SetRange(progress_max)
         self.progressValue = 0
         apk_only = True
@@ -267,7 +269,6 @@ class MainFrame(wx.Frame):
                     print("[+] Removing Debug information")
                     Debug_Removal.Find_method_debug(output_dir, ob_options.get("Debug Removal")['ignore_file'])
                 if Ren:
-                    print("[+] Renaming Variable and functions")
                     if os.path.exists(output_dir):
                         try:
                             shutil.rmtree(output_dir, ignore_errors=False, onerror=self.handleRemoveReadonly)
@@ -276,7 +277,18 @@ class MainFrame(wx.Frame):
                             return
                     shutil.copytree(inputdir, output_dir)
                     full_FilePath_list = Renaming.identify_files(output_dir, ob_options.get("Renaming")['ignore_file'])
-                    Renaming.get_VarNames(full_FilePath_list)
+                    print("[+] Renaming Functions")
+                    dict_func_rename = Renaming.rename_functionNames(Renaming.get_FunctionNames(full_FilePath_list))
+                    Renaming.sub_functionNames(dict_func_rename, full_FilePath_list)
+                    t2 = threading.Thread(target=Renaming.sub_functionNames, args=(dict_func_rename,full_FilePath_list,))
+                    t2.start()
+                    t2.join()
+                    self.updatebar()
+                    print("[+] Renaming Variables")
+                    t1 = threading.Thread(target=Renaming.get_VarNames, args=(full_FilePath_list,))
+                    t1.start()
+                    t1.join()
+                    self.updatebar()
                 if not all(item in self.list.CheckedStrings for item in default_unchecked):
                     compile_apk(self.txt_fileoutput.GetValue(), self.txt_fileinput.GetValue())
             else:
@@ -340,7 +352,7 @@ class MainFrame(wx.Frame):
                     self.list.Check(items, False)
 
     def handleRemoveReadonly(self, func, path, exc):
-        import errno, os, stat, shutil
+        import os, stat
         os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
         func(path)
 
@@ -456,7 +468,7 @@ class OptionsPop(wx.PopupWindow):
                 self.listbox.DeleteItem(sel)
                 item_id = self.listbox.InsertItem(0, renamed)
                 self.listbox.Select(item_id)
-    
+
     def OnDelete(self, event):
         sel = self.listbox.GetFirstSelected()
         if sel != -1:

@@ -32,22 +32,16 @@ def identify_files(debug_input_dir, ignorefile):
 
 def get_ClassNames(filePath_list):
     class_dict = {}
-    regex_count = 0
     for file in filePath_list:
         Filename = os.path.basename(file)
         if Filename.endswith(".java") or Filename.endswith(".kt"):
             with open(file) as fp:
-                print("Filename is: ", Filename)
                 while True:
                     line = fp.readline()
-                    # Use regex detect to kotlin variable names
                     if re.search(r"class\s(.+?)\(", str(line)):
-                        print("The line is: ", line.rstrip())
                         regex_group = re.search(r"class\s(.+?)\(", str(line)).group(1)
-                        print("The regex group 1 is: ", regex_group)
                         if (re.search(r"(.+?)(\s*)(\:)", regex_group)):
                             filtered_regex_group = re.search(r"(.+?)(\s*)(\:)", regex_group).group(1)
-                            print("The filtered regex group 1 is: ", filtered_regex_group)
                             if regex_group in class_dict:
                                 class_dict[filtered_regex_group] += 1
                             else:
@@ -63,24 +57,19 @@ def get_ClassNames(filePath_list):
 
                     if not line:
                         break
-
-                print("\n")
-    print("Regex Count is: ", regex_count)
     return class_dict
 
 
-def get_KotlinFunctionNames(filePath_list):
+def get_FunctionNames(filePath_list):
     function_dict = {}
     function_details = []
     for file in filePath_list:
         Filename = os.path.basename(file)
         if Filename.endswith(".kt"):
             with open(file) as fp:
-                print(Filename)
                 line_number = 1
                 while True:
                     line = fp.readline()
-                    # Use regex detect to kotlin functions and get its name
                     if re.search(r"fun\s(.+?)\(", str(line)):
                         function_name = re.search(r"fun\s(.+?)\(", line).group(1)
                         function_name = function_name.rstrip()
@@ -88,28 +77,12 @@ def get_KotlinFunctionNames(filePath_list):
                             function_dict[function_name] += 1
                         else:
                             function_dict[function_name] = 1
-
                         indentation_size = len(line) - len(line.lstrip())
-                        print("The kotlin function name is:", function_name)
-                        # print("The current line number is:", line_number)
-                        # print("The indent size is:", indentation_size)
                         function_details.append([file, function_name, line_number, indentation_size])
-                        print("\n")
-
                     line_number += 1
-
                     if not line:
                         break
-    # for item in function_details:
-    #     print (item)
-
-    return function_dict
-
-
-def get_JavaFunctionNames(filePath_list, another_function_Dict):
-    for file in filePath_list:
-        java_Filename = os.path.basename(file)
-        if java_Filename.endswith(".java"):
+        if Filename.endswith(".java"):
             with open(file) as fp:
                 while True:
                     line = fp.readline()
@@ -120,52 +93,39 @@ def get_JavaFunctionNames(filePath_list, another_function_Dict):
                         if "class" in line:
                             print("The java class name is:", captured_name)
                         else:
-                            print("The java function name is:", captured_name)
-                            if captured_name in another_function_Dict:
-                                another_function_Dict[captured_name] += 1
+                            if captured_name in function_dict:
+                                function_dict[captured_name] += 1
                             else:
-                                another_function_Dict[captured_name] = 1
+                                function_dict[captured_name] = 1
 
                     if not line:
                         break
-    return another_function_Dict
+    return function_dict
 
 
 def rename_functionNames(dictionary_of_functions):
     function_renamed_dict = {}
     count = 1
     for key, value in dictionary_of_functions.items():
-        # print(key, value)
         function_renamed_dict[key] = "function" + str(count)
         count += 1
-    print("\n")
-
-    for key, value in dictionary_of_functions.items():
-        print(key, value)
-
     return function_renamed_dict
 
 
 def sub_functionNames(dictionary_of_renamedFunctions, filePath_list):
     count = 0
-    # filename = r'C:/Users/juliu/Desktop/SIT Tri 2.1/ICT 2207/Assignment-02/testing/MainActivity.kt'
-
     for key, value in dictionary_of_renamedFunctions.items():
         function_name = key
         if function_name in safe_functionNames_list:
-            print("The key found in safe_functionNames_list_is: ", key)
-            print("The associated obfuscated value is: ", value)
+
             count += 1
             for filename in filePath_list:
-                print("sub_functionNames - The Filename Being Opened is: ", os.path.basename(filename))
                 reading_file = open(filename, "r")
                 new_file_content = ""
                 for line in reading_file:
                     stripped_line = line.rstrip()
                     if re.search(rf"\b({function_name})\b(\s*)(\()", str(stripped_line)):
                         new_line = re.sub(rf"\b({function_name})\b(\s*)(\()", rf"{value}\2\3", str(stripped_line))
-                        print("The stripped line is:", stripped_line)
-                        print("The subbed line is:", new_line)
                         new_file_content += new_line + "\n"
                     else:
                         new_file_content += stripped_line + "\n"
@@ -174,9 +134,6 @@ def sub_functionNames(dictionary_of_renamedFunctions, filePath_list):
                 writing_file = open(filename, "w")
                 writing_file.write(new_file_content)
                 writing_file.close()
-
-        print("\n")
-    print(count)
 
 
 def get_VarNames(filePath_list):
