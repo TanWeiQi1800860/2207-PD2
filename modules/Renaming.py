@@ -13,10 +13,13 @@ safe_functionNames_list = ["aManager", "getAndID", "getPhoneInfo", "getUserList"
 
 safe_classNames_list = ["MessageReceiver", "Utils", "getPhoneInfo"]
 variable_numberCount = 0
-reserved_words_list = ["intent"]
-
+reserved_words_list = ["intent", "count", "list"]
+inner_class_list = []
+data_class_list = []
 
 def identify_files(debug_input_dir, ignorefile):
+    global variable_numberCount
+    variable_numberCount = 0
     files_toObfuscate = []
     included_FileExts = set(['.kt', '.java'])
     excluded_Dirs = set(['.idea', 'build'])
@@ -239,6 +242,28 @@ def sub_VarNames(variable_dict, filePath_list):
                 writing_file.close()
             if filename.endswith(".kt"):
                 with open(full_fileName, "r") as reading_file:
+                    temp_string = reading_file.read()
+                    match_temp = re.findall(r"inner\sclass\s.+\s:\s.+{[\s\w\d\=\.\<\>\(\)!:]+}", temp_string)
+                    temp_list = []
+                    if len(match_temp) > 0:
+                        for match in match_temp:
+                            class_var_list = re.findall(r"(var|val)\s(.+)\s*=\s*", match)
+                            for item in class_var_list:
+                                if len(item[1].split(':')) > 1:
+                                    temp_list.append(item[1].split(':')[0].strip())
+                                else:
+                                    temp_list.append(item[1].strip())
+                    inner_class_list.extend([item for item in temp_list if item.strip()])
+                    temp_list.clear()
+                    match_data = re.findall(r"data\sclass\s\w+\((.+)\)", temp_string)
+                    if len(match_data) > 0:
+                        for match in match_data:
+                            data_class_var_list = re.findall(r"(var|val)\s([a-zA-Z1-9]+):\s", match)
+                            for item in data_class_var_list:
+                                temp_list.append(item[1].strip())
+                    data_class_list.extend(temp_list)
+                    reading_file.close()
+                with open(full_fileName, "r") as reading_file:
                     new_file_content = ""
                     for line in reading_file:
                         stripped_line = line.rstrip()
@@ -256,16 +281,22 @@ def sub_VarNames(variable_dict, filePath_list):
                             else:
                                 new_file_content += stripped_line + "\n"
                         else:
-                            if re.search(rf"\b{variable_name}\b", str(stripped_line)):
-                                if("window.navigationBarColor = tan" in str(stripped_line)):
-                                    print("Yes")
-                                new_line = re.sub(
-                                    rf"(\s!*)\b{variable_name}\b(\s*)|^[^fun]*$(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
-                                    rf"\1\3\5{value}\2\4", stripped_line)
-                                print(stripped_line)
-                                print(new_line)
-                                print("\n")
-                                new_file_content += new_line + "\n"
+                            if re.search(rf"\b{variable_name}\b", str(stripped_line)) and not re.search(r"^import\s.+",
+                                        str(stripped_line)) and not re.search(rf"fun\s\b{variable_name}\b\s*\(.*\)\:",
+                                        str(stripped_line)):
+                                check_string = re.search(rf"^[^\.]$(\s*)\b{variable_name}\b(\s*)|(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b", stripped_line)
+                                if check_string is not None:
+                                    clean_string = re.search(r"[a-zA-Z]+", check_string.group(0))
+                                if clean_string is not None and clean_string.group(0) not in reserved_words_list and clean_string.group(0) not in inner_class_list and clean_string.group(0) not in data_class_list:
+                                    new_line = re.sub(
+                                        rf"^[^\.]$(\s*)\b{variable_name}\b(\s*)|(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
+                                        rf"\1\3\5{value}\2\4", stripped_line)
+                                    print(stripped_line)
+                                    print(new_line)
+                                    print("\n")
+                                    new_file_content += new_line + "\n"
+                                else:
+                                    new_file_content += stripped_line + "\n"
                             else:
                                 new_file_content += stripped_line + "\n"
 

@@ -248,7 +248,7 @@ class MainFrame(wx.Frame):
                 CSE = 'Constant String Encryption' in self.list.CheckedStrings
                 DeRe = 'Debug Removal' in self.list.CheckedStrings
                 Ren = 'Renaming' in self.list.CheckedStrings
-                output_dir = self.txt_fileoutput.GetValue() + apk_name
+                output_dir = self.txt_fileoutput.GetValue()+"\\"+apk_name
                 if AB or NoC:
                     if AB:
                         print("[+] Running Arithmetic Branch")
