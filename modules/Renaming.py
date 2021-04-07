@@ -257,8 +257,10 @@ def sub_VarNames(variable_dict, filePath_list):
                                 new_file_content += stripped_line + "\n"
                         else:
                             if re.search(rf"\b{variable_name}\b", str(stripped_line)):
+                                if("window.navigationBarColor = tan" in str(stripped_line)):
+                                    print("Yes")
                                 new_line = re.sub(
-                                    rf"(\s!*)\b{variable_name}\b(\s)|^[^fun]*$(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
+                                    rf"(\s!*)\b{variable_name}\b(\s*)|^[^fun]*$(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
                                     rf"\1\3\5{value}\2\4", stripped_line)
                                 print(stripped_line)
                                 print(new_line)
