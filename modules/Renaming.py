@@ -40,7 +40,7 @@ def get_ClassNames(filePath_list):
                     line = fp.readline()
                     if re.search(r"class\s(.+?)\(", str(line)):
                         regex_group = re.search(r"class\s(.+?)\(", str(line)).group(1)
-                        if (re.search(r"(.+?)(\s*)(\:)", regex_group)):
+                        if re.search(r"(.+?)(\s*)(\:)", regex_group):
                             filtered_regex_group = re.search(r"(.+?)(\s*)(\:)", regex_group).group(1)
                             if regex_group in class_dict:
                                 class_dict[filtered_regex_group] += 1
@@ -117,7 +117,6 @@ def sub_functionNames(dictionary_of_renamedFunctions, filePath_list):
     for key, value in dictionary_of_renamedFunctions.items():
         function_name = key
         if function_name in safe_functionNames_list:
-
             count += 1
             for filename in filePath_list:
                 reading_file = open(filename, "r")
@@ -178,8 +177,8 @@ def get_VarNames(filePath_list):
             with open(full_fileName) as fp:
                 while True:
                     line = fp.readline()
-                    if (re.search(r"(var|val)(\s+)(.+?)(\s*)(\=|\:)", str(line))):
-                        if (re.search(r"(const)(\s+)(val|var)", str(line))):
+                    if re.search(r"(var|val)(\s+)(.+?)(\s*)(\=|\:)", str(line)):
+                        if re.search(r"(const)(\s+)(val|var)", str(line)):
                             pass
                         else:
                             regex_group = re.search(r"(var|val)(\s+)(.+?)(\s*)(\=|\:)", str(line)).group(1, 2, 3)
@@ -220,7 +219,7 @@ def sub_VarNames(variable_dict, filePath_list):
                 new_file_content = ""
                 for line in reading_file:
                     stripped_line = line.rstrip()
-                    if (re.search(rf"\b{variable_name}\b", str(stripped_line))):
+                    if re.search(rf"\b{variable_name}\b", str(stripped_line)):
                         new_line = re.sub(
                             rf"(\s)\b{variable_name}\b(\s)|(|\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)",
                             rf"\1\3{value}\2\4", stripped_line)
@@ -245,8 +244,8 @@ def sub_VarNames(variable_dict, filePath_list):
                         stripped_line = line.rstrip()
                         match_string = re.search(rf"(var|val)(\s)\b{variable_name}\b(\s*=\s*)(\b{variable_name}\b)",
                                                  str(stripped_line))
-                        if (match_string != None):
-                            if (match_string.group(4) in reserved_words_list):
+                        if match_string is not None:
+                            if match_string.group(4) in reserved_words_list:
                                 new_line = re.sub(rf"(var|val)(\s)\b{variable_name}\b(\s*=\s*)(.+)",
                                                   rf"\1\2{value}\3\4",
                                                   stripped_line)
@@ -257,9 +256,9 @@ def sub_VarNames(variable_dict, filePath_list):
                             else:
                                 new_file_content += stripped_line + "\n"
                         else:
-                            if (re.search(rf"\b{variable_name}\b", str(stripped_line))):
+                            if re.search(rf"\b{variable_name}\b", str(stripped_line)):
                                 new_line = re.sub(
-                                    rf"(\s!*)\b{variable_name}\b(\s)|(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
+                                    rf"(\s!*)\b{variable_name}\b(\s)|^[^fun]*$(\(|\s|\[|\.\.|!|\+|\+=|,|\$|{{)\b{variable_name}\b(\)*)|(other\.)\b{variable_name}\b",
                                     rf"\1\3\5{value}\2\4", stripped_line)
                                 print(stripped_line)
                                 print(new_line)
