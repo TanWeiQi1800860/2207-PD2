@@ -29,7 +29,32 @@ def identify_files(debug_input_dir, ignorefile):
         for file in files:
             filename, file_extension = os.path.splitext(file)
             if file_extension in included_FileExts:
-                files_toObfuscate.append(PurePath(subdir, file))
+                file_path = PurePath(subdir, file)
+                files_toObfuscate.append(file_path)
+                filename = os.path.basename(file_path)
+                if filename.endswith(".kt"):
+                    with open(file_path, "r") as reading_file:
+                        temp_string = reading_file.read()
+                        match_temp = re.findall(r"inner\sclass\s.+\s:\s.+{[\s\w\d\=\.\<\>\(\)!:]+}", temp_string)
+                        temp_list = []
+                        if len(match_temp) > 0:
+                            for match in match_temp:
+                                class_var_list = re.findall(r"(var|val)\s(.+)\s*=\s*", match)
+                                for item in class_var_list:
+                                    if len(item[1].split(':')) > 1:
+                                        temp_list.append(item[1].split(':')[0].strip())
+                                    else:
+                                        temp_list.append(item[1].strip())
+                        inner_class_list.extend([item for item in temp_list if item.strip()])
+                        temp_list.clear()
+                        match_data = re.findall(r"data\sclass\s\w+\((.+)\)", temp_string)
+                        if len(match_data) > 0:
+                            for match in match_data:
+                                data_class_var_list = re.findall(r"(var|val)\s([a-zA-Z1-9]+):\s", match)
+                                for item in data_class_var_list:
+                                    temp_list.append(item[1].strip())
+                        data_class_list.extend(temp_list)
+                        reading_file.close()
     return files_toObfuscate
 
 
@@ -241,28 +266,6 @@ def sub_VarNames(variable_dict, filePath_list):
                 writing_file.write(new_file_content)
                 writing_file.close()
             if filename.endswith(".kt"):
-                with open(full_fileName, "r") as reading_file:
-                    temp_string = reading_file.read()
-                    match_temp = re.findall(r"inner\sclass\s.+\s:\s.+{[\s\w\d\=\.\<\>\(\)!:]+}", temp_string)
-                    temp_list = []
-                    if len(match_temp) > 0:
-                        for match in match_temp:
-                            class_var_list = re.findall(r"(var|val)\s(.+)\s*=\s*", match)
-                            for item in class_var_list:
-                                if len(item[1].split(':')) > 1:
-                                    temp_list.append(item[1].split(':')[0].strip())
-                                else:
-                                    temp_list.append(item[1].strip())
-                    inner_class_list.extend([item for item in temp_list if item.strip()])
-                    temp_list.clear()
-                    match_data = re.findall(r"data\sclass\s\w+\((.+)\)", temp_string)
-                    if len(match_data) > 0:
-                        for match in match_data:
-                            data_class_var_list = re.findall(r"(var|val)\s([a-zA-Z1-9]+):\s", match)
-                            for item in data_class_var_list:
-                                temp_list.append(item[1].strip())
-                    data_class_list.extend(temp_list)
-                    reading_file.close()
                 with open(full_fileName, "r") as reading_file:
                     new_file_content = ""
                     for line in reading_file:
