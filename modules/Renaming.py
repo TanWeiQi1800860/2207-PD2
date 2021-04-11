@@ -206,9 +206,6 @@ def get_VarNames(filePath_list):
                 while True:
                     line = fp.readline()
                     if re.search(r"(var|val)(\s+)(.+?)(\s*)(\=|\:)", str(line)):
-                        if re.search(r"(const)(\s+)(val|var)", str(line)):
-                            pass
-                        else:
                             regex_group = re.search(r"(var|val)(\s+)(.+?)(\s*)(\=|\:)", str(line)).group(1, 2, 3)
                             regex_group = list(regex_group)
                             var_list.append(regex_group)
