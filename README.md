@@ -8,11 +8,14 @@ This folder contains the obfuscation techniques. Any python file put in to this 
  -  Arithmetic_Branch.py : Add arithmetic if-else codes in methods. No arithemtic funtion will be added if register is more than 10 and if the method contains a '$' sign
  -  Constant_String_Encryption.py : Encrypt all Const-string variable using AES CBC with padding 
  -  Nop_Code.py : Add nop at the end of each method
+ -  Debug_Removal.py: Remove all debugging information like “.source”, “.line”, “.prologue”, “.epilogue” as these will reflect what the file flow be like.
+ -  Renaming.py: Obfuscate variable names in kotlin and java files within Android application source code  
 # resources
 This folder contains any resources required for the project
  - obf_key.jks - store pass: 123456
  - Hello-world.apk - For testing obfuscate technique
  - app-debug.apk - A more complicated app. A 2048 game, from PD1
+ - Coursework 1 source code (To test function renaming)
 # tools
 This folder contains external tools required for the project
 
